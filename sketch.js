@@ -3,10 +3,10 @@
 // ─────────────────────────────────────────────
 let objects = []       // your drawable things go here
 let mic, fft           // audio (if using p5.sound)
-let NUMBER_OF_BUBBLES = 20
-let INITIAL_DISTANCE_BETWEEN = 50
-let FRACTAL_LEVELS = 20
-const COLOR_CHOICES = ['#63a7ffff','#ff63a7ff','#63a7ffff','#63a7ffff','#e5ff63ff']
+let NUMBER_OF_BUBBLES = 8
+let INITIAL_DISTANCE_BETWEEN = 200
+let NUM_SLICES = 4
+const COLOR_CHOICES = [ '#7C13A4', '#EA00D9', '#2AAEB6']
 
 class bubble {
     constructor(x, y, r, col) {
@@ -20,18 +20,18 @@ class bubble {
         this.offset = 0;
         this.r = r
         this.color = color(COLOR_CHOICES[colorIndex]);
-        this.squirl = map(col%5, 0, 4,.01, .06);
+        this.squirl = .1 + random(.1)  // how much the noise "twists"
         this.angle = random(TWO_PI)       // random starting angle
-        this.spin = -0.05  // how fast it rotates
+        this.spin = -.05  // how fast it rotates
         
     }
 
     update() {
         
-        this.ax = sin(frameCount * 0.05 + this.offset) * .5
-        this.ay = ( cos(frameCount * 0.05 + this.offset))* .5
-        this.vx += this.ax + sin(frameCount * this.squirl + this.offset) * .5
-        this.vy += this.ay + cos(frameCount * this.squirl + this.offset) * .5
+        this.ax = sin(frameCount * 0.01 + this.offset) * .5
+        this.ay = ( cos(frameCount * 0.01 + this.offset))* .5
+        this.vx += this.ax + sin(frameCount * this.squirl + this.offset) * 1
+        this.vy += this.ay + cos(frameCount * this.squirl + this.offset) * 1
         this.vx *= 0.8
         this.vy *= 0.8
         this.x += this.vx
@@ -40,40 +40,54 @@ class bubble {
 
     }
 
-draw() {
-    for (let level = 0; level < FRACTAL_LEVELS; level++) {
-        let scale = pow(0.5, level)        // each level is half the size
-        let offset = this.r * level * 1.5  // spread them out
-
-        noStroke()
-        let r = red(this.color)
-        let g = green(this.color)
-        let b = blue(this.color)
-
-        drawingContext.save()
-        drawingContext.translate(
-            this.x + cos(this.angle) * offset,
-            this.y + sin(this.angle) * offset
-        )
-        drawingContext.rotate(this.angle + level * PI / 3)
-
-        let grad = drawingContext.createRadialGradient(0, 0, 0, 0, 0, this.r * 3 * scale)
-        grad.addColorStop(0,    `rgba(${r},${g},${b},0.5)`)
-        grad.addColorStop(0.15, `rgba(${r},${g},${b},0.4)`)
-        grad.addColorStop(0.5,  `rgba(${r},${g},${b},0.3)`)
-        grad.addColorStop(1,    `rgba(255,255,255,0.1)`)
-
-        drawingContext.fillStyle = grad
-        drawingContext.beginPath()
-        drawingContext.roundRect(
-            -this.r * scale, -this.r * 2 * scale,
-            this.r * 2 * scale, this.r * 4 * scale,
-            this.r * 0.5 * scale
-        )
-        drawingContext.fill()
-        drawingContext.restore()
-    }
-}
+    draw() {
+      const cx = width / 2
+      const cy = height / 2
+  
+      for (let slice = 0; slice < NUM_SLICES; slice++) {
+          drawingContext.save()
+          
+          // rotate this slice around canvas center
+          drawingContext.translate(cx, cy)
+          drawingContext.rotate(slice * TWO_PI / NUM_SLICES)
+          if (slice % 2 === 0) drawingContext.scale(1, -1)  // mirror alternating
+          drawingContext.translate(-cx, -cy)
+  
+          // ── your existing code unchanged below ──
+  
+              noStroke()
+              let r = red(this.color)
+              let g = green(this.color)
+              let b = blue(this.color)
+  
+              drawingContext.save()
+              drawingContext.translate(
+                  this.x + cos(this.angle) * this.offset,
+                  this.y + sin(this.angle) * this.offset
+              )
+              drawingContext.rotate(this.angle * PI / 3)
+  
+              let grad = drawingContext.createRadialGradient(0, 0, 0, 0, 0, this.r*2)
+              grad.addColorStop(0,    `rgba(${r},${g},${b},0.008)`)
+              grad.addColorStop(.3,    `rgba(${r},${g},${b},0.006)`)
+              grad.addColorStop(0.6, `rgba(${r},${g},${b},0.0002`)
+              grad.addColorStop(1,  `rgba(${r},${g},${b},0.0001)`)
+  
+              drawingContext.fillStyle = grad
+              drawingContext.beginPath()
+              drawingContext.roundRect(
+                  -this.r, -this.r * 2,
+                  this.r * 2, this.r * 4,
+                  this.r * 0.5
+              )
+              drawingContext.fill()
+              drawingContext.restore()
+        
+          // ── end your existing code ──
+  
+          drawingContext.restore()  // restore the slice rotation
+      }
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -95,7 +109,7 @@ for (let i = 0; i < NUMBER_OF_BUBBLES; i++) {
     objects.push(new bubble(
         startX + INITIAL_DISTANCE_BETWEEN * col,
         startY + INITIAL_DISTANCE_BETWEEN * row,
-        80,
+        150,
         col
     ))
 }
@@ -118,17 +132,14 @@ function draw() {
 
     // reset blend mode FIRST so background clears correctly
     blendMode(BLEND)
-    background(0, 0, 0, 10)   // now this actually fades
+    background(0, 0, 0, 5)   // now this actually fades
 
     blendMode(ADD)             // glow mode for bubbles
     for (let obj of objects) {
         obj.update()
         obj.draw()
     }
-    blendMode(BLEND) 
-  for (let obj of objects) {
-    obj.draw()
-  }
+
 }
 
 // ─────────────────────────────────────────────
