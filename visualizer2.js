@@ -72,11 +72,11 @@ const absHigh = constrain(map(high, 0, peakHigh, 0.8, 2), 0.5, 2);
 
 // Also widen bestHigh ceiling
 const bestLow = constrain(ratioLow * absLow, 1, 3);
-const bestHigh = constrain(ratioHigh * absHigh, 0.5, 2);
+const bestHigh = constrain(ratioHigh * absHigh, 0.5, 3);
 const excitementMultiplyer1 = map(bestLow, 1, 3, 0.5, 3)
   const excitementValue = map(bestHigh, 1, 3, .001, .05)
   TOTAL_OFFSET += TOTAL_OFFSET > 100000 ? excitementValue : -excitementValue
-  background(0,50,200, 10);
+  background(0,0,0, 20);
   const t = frameCount * SPEED;
   const centerT = frameCount * CENTER_SPEED;
   const cx = width / 2;
@@ -84,7 +84,7 @@ const excitementMultiplyer1 = map(bestLow, 1, 3, 0.5, 3)
   stroke(255,40,40,250);
   blendMode(BLEND);
   noStroke();
-  blendMode(BLEND);
+  blendMode(ADD);
   strokeWeight(1);
   for (const blob of centerBlobs) {
     blob.x += (noise(centerT + blob.rx) - .5);
@@ -148,10 +148,10 @@ function isInFrame(blob)
 
 function drawBlob(offsets, cx, cy, t, rx, ry, excite, excite2) {
   const grad = drawingContext.createRadialGradient(cx, cy, 0, cx, cy, max(rx, ry));
-  grad.addColorStop(0, `rgba(0, 205, 10, 0.7)`);
-  grad.addColorStop(0.2 * excite, `rgba(19, 164, 8, 0.6)`);
-  grad.addColorStop(.6, 'rgba(19, 164, 8, 0.5');
-  grad.addColorStop(1, 'rgba(74, 120, 5, 0.4)');
+  grad.addColorStop(0, `rgba(255, 94, 20, 0.2)`);
+  grad.addColorStop(0.2 * excite, `rgba(255, 94, 20, 0.1)`);
+  grad.addColorStop(.6, 'rgba(255, 94, 20, 0.1)');
+  grad.addColorStop(1, 'rgba(255, 36, 20, 0.06)');
   drawingContext.fillStyle = grad;
   drawingContext.strokeStyle = 'rgba(255,27,0,0.4)';
 
